@@ -19,11 +19,54 @@ app
   .get("/api/todos", (c) => {
     return c.json(todos);
   })
-  .post("/todos", async (c) => {
+  .get("/api/todo/:id", (c) => {
+    const id = Number(c.req.param("id"));
+    return c.json(todos.find((todo: any) => todo.id === id));
+  })
+  .post("/api/todos", async (c) => {
     const todo = await c.req.json();
     todos.push(todo);
     Bun.write("src/todos.json", JSON.stringify(todos));
     return c.json(todo);
+  })
+  .delete("/api/todo/:id", (c) => {
+    const id = Number(c.req.param("id"));
+    todos.splice(
+      todos.findIndex((todo: any) => todo.id === id),
+      1
+    );
+    Bun.write("src/todos.json", JSON.stringify(todos));
+    return c.json({ success: true });
+  })
+  .patch("/api/todo/toggle/:id", (c) => {
+    const id = Number(c.req.param("id"));
+    const todo = todos.find((todo: any) => todo.id === id);
+    todo.completed = !todo.completed;
+    Bun.write("src/todos.json", JSON.stringify(todos));
+    return c.json(todo);
+  })
+  .patch("/api/todo/edittitle/:id", async (c) => {
+    const id = Number(c.req.param("id"));
+    const body = await c.req.json();
+    const todo = todos.find((todo: any) => todo.id === id);
+    todo.title = body.title;
+    Bun.write("src/todos.json", JSON.stringify(todos));
+    return c.json(todo);
+  })
+  .patch("/api/todo/edittitle2", async (c) => {
+    const body = await c.req.json();
+    const todo = todos.find((todo: any) => todo.title.includes(body.search));
+    todo.title = body.title;
+    Bun.write("src/todos.json", JSON.stringify(todos));
+    return c.json(todo);
+  })
+  .patch("/api/todo/edittitle3", async (c) => {
+    const body = await c.req.json();
+    const todo = todos.find((todo: any) =>
+      todo.title.toLowerCase().includes(body.search.toLowerCase())
+    );
+    todo.title = body.title;
+    Bun.write("src/todos.json", JSON.stringify(todos));
+    return c.json(todo);
   });
-
 export default app;
